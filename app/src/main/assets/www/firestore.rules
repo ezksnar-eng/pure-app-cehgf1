@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // الإدارة = إيميل المدير + إيميل مؤكَّد (نفس شرط لوحة الإدارة بالتطبيق)
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'ezjerry53@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    // القراءة للجميع، الكتابة/الحذف للمدير فقط
+    match /manga/{workId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /chapters/{chapterId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+    }
+
+    match /{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
